@@ -1,7 +1,9 @@
 //  OpenShift sample Node application
 var express = require('express'),
     app     = express(),
-    morgan  = require('morgan');
+    morgan  = require('morgan'),
+    http = require('http');
+ 
     
 Object.assign=require('object-assign')
 
@@ -91,6 +93,31 @@ app.get('/pagecount', function (req, res) {
     res.send('{ pageCount: -1 }');
   }
 });
+
+
+app.get('/test', function (req, res) {
+    res.send('<h1>test worked!</h1>');
+});
+
+
+app.get('/netbibletest', function (req, res) {
+    http.get('http://labs.bible.org/api/?passage=John%203:16&type=json', (resp) => {
+      let data = '';
+      // A chunk of data has been recieved.
+      resp.on('data', (chunk) => {
+        data += chunk;
+      });
+      // The whole response has been received. Print out the result.
+      resp.on('end', () => {
+        res.send(JSON.parse(data));
+      });
+    }).on("error", (err) => {
+      console.log("Error: " + err.message);
+    });
+});
+
+
+
 
 // error handling
 app.use(function(err, req, res, next){
