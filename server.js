@@ -2,8 +2,8 @@
 var express = require('express'),
     app     = express(),
     morgan  = require('morgan'),
-    http = require('http');
- 
+    http = require('http'),
+    querystring = require('querystring');
     
 Object.assign=require('object-assign')
 
@@ -103,6 +103,23 @@ app.get('/test', function (req, res) {
 // NET Bible API test
 app.get('/netbibletest', function (req, res) {
     http.get('http://labs.bible.org/api/?passage=John%203:16&type=json', (resp) => {
+      let data = '';
+      // A chunk of data has been recieved.
+      resp.on('data', (chunk) => {
+        data += chunk;
+      });
+      // The whole response has been received. Print out the result.
+      resp.on('end', () => {
+        res.send(JSON.parse(data));
+      });
+    }).on("error", (err) => {
+      console.log("Error: " + err.message);
+    });
+});
+
+// NET Bible chapter REST API
+app.get('/rest/:book/:chap', function (req, res) {
+    http.get('http://labs.bible.org/api/?passage='+req.params.book+'%20'+req.params.chap+':1&type=json', (resp) => {
       let data = '';
       // A chunk of data has been recieved.
       resp.on('data', (chunk) => {
