@@ -95,11 +95,12 @@ app.get('/pagecount', function (req, res) {
 });
 
 
+// Test GET request
 app.get('/test', function (req, res) {
     res.send('<h1>test worked!</h1>');
 });
 
-
+// NET Bible API test
 app.get('/netbibletest', function (req, res) {
     http.get('http://labs.bible.org/api/?passage=John%203:16&type=json', (resp) => {
       let data = '';
