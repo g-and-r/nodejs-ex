@@ -119,7 +119,7 @@ app.get('/netbibletest', function (req, res) {
 
 // NET Bible chapter REST API
 app.get('/rest/:book/:chap', function (req, res) {
-    http.get('http://labs.bible.org/api/?passage='+req.params.book+'%20'+req.params.chap+':1&type=json', (resp) => {
+    http.get('http://labs.bible.org/api/?passage='+req.params.book+'%20'+req.params.chap+'&type=text&formatting=para', (resp) => {
       let data = '';
       // A chunk of data has been recieved.
       resp.on('data', (chunk) => {
@@ -127,7 +127,7 @@ app.get('/rest/:book/:chap', function (req, res) {
       });
       // The whole response has been received. Print out the result.
       resp.on('end', () => {
-        res.send(JSON.parse(data));
+        res.send(data);
       });
     }).on("error", (err) => {
       console.log("Error: " + err.message);
