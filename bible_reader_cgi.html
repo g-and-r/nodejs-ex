@@ -1,0 +1,40 @@
+<html>
+<head>
+<title>Bible Reader</title>
+
+</head>
+<body>
+
+	<div 
+		style="	
+			position:absolute;
+			left:0px;
+			right:0px;
+			top:0px;
+			height:22px;
+			background-color:#eeeeee;
+		"
+	>
+		<form action = "/bible_reader_cgi" method = "get">
+			<input width="10" name="passage" value="passage_box">
+			<input width="5" name="version" value="version_box">
+			<input type="submit" value="Go">
+		</form>
+	</div>
+
+	<div 
+		style="	
+			position:absolute;
+			left:2px;
+			right:2px;
+			top:22px;
+			bottom:0px;
+			background-color:#ffffff;
+			overflow-y:scroll;
+		"
+	>
+		text_box
+	</div>
+
+</body>
+</html>
