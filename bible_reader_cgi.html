@@ -7,11 +7,7 @@
 
 	<div 
 		style="	
-			position:absolute;
-			left:0px;
-			right:0px;
-			top:0px;
-			height:22px;
+			width:100%;
 			background-color:#eeeeee;
 		"
 	>
@@ -25,15 +21,25 @@
 	<div 
 		style="	
 			position:absolute;
-			left:2px;
-			right:2px;
-			top:22px;
-			bottom:0px;
+			width:100%;
 			background-color:#ffffff;
 			overflow-y:scroll;
 		"
 	>
 		text_box
+	</div>
+
+	<div 
+		style="	
+			width:100%;
+			background-color:#eeeeee;
+		"
+	>
+		<form action = "/bible_reader_cgi" method = "get">
+			<input style="width:80px;" name="passage" value="passage_box">
+			<input style="width:40px;" name="version" value="version_box">
+			<input type="submit" value="Go">
+		</form>
 	</div>
 
 </body>
