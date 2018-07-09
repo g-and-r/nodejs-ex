@@ -1,9 +1,22 @@
-//  OpenShift sample Node application
+//  Load 
 var express = require('express'),
     app     = express(),
     morgan  = require('morgan'),
     http = require('http'),
+    https = require('https'),
+    fs = require('fs'),
     querystring = require('querystring');
+
+
+var bible_reader_file = 'bible_reader.html';
+var bible_reader;
+fs.readFile(bible_reader_file, 'utf8', function (err,data) {
+  if (err) { return console.log(err); }
+  bible_reader = data;
+  console.log('Loaded '+bible_reader_file);
+});
+
+
     
 Object.assign=require('object-assign')
 
@@ -134,6 +147,97 @@ app.get('/rest/:book/:chap', function (req, res) {
     });
 });
 
+// Any site -- remove href or src tags
+app.get('/minimal_html/:site', function (req, res) {
+	console.log("\nLoading: "+req.params.site);
+    https.get('https://'+req.params.site, (resp) => {
+      let data = '';
+      // A chunk of data has been recieved.
+      resp.on('data', (chunk) => {
+        data += chunk;
+      });
+      // The whole response has been received. Print out the result.
+      resp.on('end', () => {
+      	data = data.replace(/<[^>]{7,}>/ig, (sub_string, p1, p2, p3, offset, string) => {
+      		return '';
+      	});
+      	//console.log('-------------------------');
+      	//console.log(data);
+      	res.send(data);
+      	//console.log('-------------------------');
+      });
+    }).on("error", (err) => {
+      console.log("Error: " + err.message);
+    });
+});
+
+
+// bible_reader.html
+app.get('/bible_reader', function (req, res) {
+	res.send(bible_reader);
+});
+
+
+// GETBIBLE convert JSON to plaintext
+function convertGETBIBLE(json_object) {
+	let text = '';
+	if (json_object.book) {
+		// Book-style result
+		console.log('book object');
+		console.log(json_object.book[0]);
+		for (let verse in json_object.book[0].chapter) {
+			text += '<b>'+verse+'</b> '+json_object.book[0].chapter[verse].verse+'<br>';
+		}
+	} else if (json_object.chapter) {
+		// Chapter-style result
+		for (let verse in json_object.chapter) {
+			text += '<b>'+verse+'</b> '+json_object.chapter[verse].verse+'<br>';
+		}
+	} else {
+		text = '<h1>Error: I don\'t recognize the object structure received from getbible.net/json</h1>';
+	}
+	return text;
+}
+
+// GETBIBLE api
+app.get('/bibleapi/:query/:version', function (req, res) {
+	let request = '/json?passage='+encodeURI(req.params.query)+'&version='+encodeURI(req.params.version);
+	//let request = '/json?passage=Acts%2015:1-5,%2010,%2015&version=aov';
+	console.log('Requesting: '+request);
+    http.get(
+    	{
+		hostname: 'getbible.net',
+		port: 80,
+		path: request,
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			'User-Agent': 'javascript'
+		}
+  	},
+  	(resp) => {
+		let data = '';
+		// A chunk of data has been recieved.
+		resp.on('data', (chunk) => {
+			data += chunk;
+		});
+		// The whole response has been received. Print out the result.
+		resp.on('end', () => {
+			try {
+				let json_text = data.match(/({.*})/)[1];
+				let json_object = JSON.parse(json_text);
+				let converted_text = convertGETBIBLE(json_object);
+				res.send(converted_text);
+				//res.json(json_object);
+			} catch (error) {
+				console.log('Error while parsing returned JSON data: '+error);
+				res.send('Not recognized. Try something like "Jn 1:1-12".');
+			}
+		});
+	}).on("error", (err) => {
+		console.log("Error: " + err.message);
+	});
+});
 
 
 
