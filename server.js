@@ -16,6 +16,13 @@ fs.readFile(bible_reader_file, 'utf8', function (err,data) {
   console.log('Loaded '+bible_reader_file);
 });
 
+var bible_reader_cgi_file = 'bible_reader_cgi.html';
+var bible_reader_cgi;
+fs.readFile(bible_reader_cgi_file, 'utf8', function (err,data) {
+  if (err) { return console.log(err); }
+  bible_reader_cgi = data;
+  console.log('Loaded '+bible_reader_cgi_file);
+});
 
     
 Object.assign=require('object-assign')
@@ -239,6 +246,54 @@ app.get('/bibleapi/:query/:version', function (req, res) {
 	});
 });
 
+
+
+// GETBIBLE api - CGI version
+app.get('/bible_reader_cgi', function (req, res) {
+	console.log('===== CGI Query =====');
+	console.log(req.query);
+	let pas = req.query.passage||'Gen 1:1';
+	let ver = req.query.version||'kjv';
+	
+	let request = '/json?passage='+encodeURI(pas)+'&version='+encodeURI(ver);
+	console.log('Requesting: '+request);
+    http.get(
+    	{
+		hostname: 'getbible.net',
+		port: 80,
+		path: request,
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			'User-Agent': 'javascript'
+		}
+  	},
+  	(resp) => {
+		let data = '';
+		// A chunk of data has been recieved.
+		resp.on('data', (chunk) => {
+			data += chunk;
+		});
+		// The whole response has been received. Print out the result.
+		resp.on('end', () => {
+			try {
+				let json_text = data.match(/({.*})/)[1];
+				let json_object = JSON.parse(json_text);
+				let converted_text = convertGETBIBLE(json_object);
+				let html_doc = bible_reader_cgi.replace('passage_box', pas);
+				html_doc = html_doc.replace('version_box', ver);
+				html_doc = html_doc.replace('text_box', converted_text);
+				res.send(html_doc);
+				//res.json(json_object);
+			} catch (error) {
+				console.log('Error while parsing returned JSON data: '+error);
+				res.send('Not recognized. Try something like "Jn 1:1-12".');
+			}
+		});
+	}).on("error", (err) => {
+		console.log("Error: " + err.message);
+	});
+});
 
 
 // error handling
